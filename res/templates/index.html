@@ -2,14 +2,23 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<title>FS Getränkesystem</title>
+		<title>Getränkesystem</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="/static/lit.css">
+		<link rel="stylesheet" type="text/css" href="/static/util.css">
 	</head>
-	<body>
-		<p>fs et getränkesystem</p>
-		<ul>
+	<body class="m0">
+		<div class="c">
+			<h1>Getränkesystem</h1>
+			<hr>
 			{% for page in pages %}
-				<li><a href="{{page.0}}">{{page.1}}</a></li>
+			<div class="card">
+				<h3 class="m0 {{page.3}}">{{page.1}}</h3>
+				<p>{{page.2}}</p>
+				<a class="btn" href="{{page.0}}">Öffnen</a>
+			</div>
 			{% endfor %}
-		</ul>
+		</div>
 	</body>
 </html>

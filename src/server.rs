@@ -36,21 +36,21 @@ pub fn run(port: u16) {
 		tera.full_reload().expect("could not full-reload");
 		let path = Url::parse(&("http://0.0.0.0".to_owned() + request.url())).expect("could not parse url");
 		let path = path.path_segments().map(|c| c.collect::<Vec<_>>() ).unwrap_or(vec![]);
-		println!(">> {:?}", path);
+		
 		let mut context = tera::Context::new();
+		if path.len() == 1 && path[0] == "LF20.html" {
 
-		println!("path-len: {}", path.len());
-		if path.len() == 1 && path[0] == "" {
+			send_response(&mut tera, &context, request, "LF20.html");
+		} else if path.len() == 1 && path[0] == "" {
 			context.insert("pages", &vec![
-				("/LF10.html", "/LF10/ Fs-Mitglied"),
-				("/LF20.html", "/LF20/ Kassenwart"),
-				("/LF30.html", "/LF30/ Getränkewart"),
-				("/LF40.html", "/LF40/ System"),
+				("/LF10.html", "Bediener", "Tabletmodus für Verwendung an der Theke. Hier vermerkt das Fachschaftsmitglied bestellte Getränke und führt Abbuchungen aus.", "info"),
+				("/LF20.html", "Kassenwart", "Verwaltung der Kasse und des Guthabens. Hier verwaltet der Kassenwart Konten und Guthaben der Mitglieder.", "accent"),
+				("/LF30.html", "Getränkewart", "Verwaltung des Getränkebestands.", "success"),
+				("/LF40.html", "System", "Sonstige Systemeinstellungen und -funktionen.", "black"),
 			]);
 
 			send_response(&mut tera, &context, request, "index.html");
 		} else if path.len() == 2 && path[0] == "static" {
-			println!("<<{:?}", PathBuf::from(static_path()).join(path[1]));
 			let response = tiny_http::Response::from_file(File::open(
 				PathBuf::from(static_path()).join(path[1])
 			).unwrap());
