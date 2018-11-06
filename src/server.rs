@@ -1,6 +1,7 @@
 extern crate tiny_http;
 extern crate tera;
 extern crate url;
+extern crate base64 as b64;
 extern crate percent_encoding;
 use server::url::percent_encoding::percent_decode;
 use db::user::User;
@@ -35,11 +36,14 @@ fn parse_formbody(body: &str) -> HashMap<&str, String> {
 		.for_each(|e| {
 			let mut kv = e.split("=").into_iter();
 			
-			let k: &str = kv.nth(0).expect(&format!("1) e = {}", e));
-			let v: &str = kv.nth(0).expect(&format!("2) e = {}", e));
-			let dec = percent_decode(v.as_bytes()).decode_utf8().expect("could not decode url").to_string();
+			let k = kv.nth(0).expect(&format!("1) e = {}", e));
+			let v = kv.nth(0).expect(&format!("2) e = {}", e));
+			let cv = percent_decode(v.as_bytes()).decode_utf8().expect("could not percent-decode").to_string();
+			let cv = percent_decode(cv.as_bytes()).decode_utf8().expect("could not percent-decode").to_string();
+						
 
-			form_data.insert(k, dec);
+			
+			form_data.insert(k, cv);
 		});
 
 	form_data
@@ -115,15 +119,15 @@ pub fn run(port: u16, db: &mut Datenbank) {
 				_ => (),
 			};
 
-			request.respond(respond_redirect("/LF20.html")).expect("could not respond with redirect");
-		} else if path.len() == 1 && path[0] == "LF20.html" {
+			request.respond(respond_redirect("/accounts")).expect("could not respond with redirect");
+		} else if path.len() == 1 && path[0] == "accounts" {
 			let users = db.get_users();
 			context.insert("users", &users);
 			send_response(&mut tera, &context, request, "LF20.html");
 		} else if path.len() == 1 && path[0] == "" {
 			context.insert("pages", &vec![
 				("/LF10.html", "Bediener", "Tabletmodus für Verwendung an der Theke. Hier vermerkt das Fachschaftsmitglied bestellte Getränke und führt Abbuchungen aus.", "info"),
-				("/LF20.html", "Kassenwart", "Verwaltung der Kasse und des Guthabens. Hier verwaltet der Kassenwart Konten und Guthaben der Mitglieder.", "accent"),
+				("/accounts", "Kassenwart", "Verwaltung der Kasse und des Guthabens. Hier verwaltet der Kassenwart Konten und Guthaben der Mitglieder.", "accent"),
 				("/LF30.html", "Getränkewart", "Verwaltung des Getränkebestands.", "success"),
 				("/LF40.html", "System", "Sonstige Systemeinstellungen und -funktionen.", "black"),
 			]);
