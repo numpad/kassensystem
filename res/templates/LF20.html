@@ -23,14 +23,28 @@
 					</tr>
 				</thead>
 				<tbody>
+					{% for user in users %}
 					<tr>
-						<td>Mustermann, Max</td>
-						<td>17.50€</td>
-						<td>FS-Mitglied</td>
-						<td>vor 3 Tagen</td>
+						<td>{{user.name}}</td>
+						<td>{{user.balance / 100}}€</td>
+						<td>{{user.utype}}</td>
+						<td>vor {{user.last_active}} Tagen</td>
 						<td><button class="btn pill accent" onclick="alert('todo')">Verwalten</button></td>
 					</tr>
-			</tbody>
+					{% endfor %}
+					<tr>
+						<form action="/api/add_user" method="POST">
+							<td><input class="card w-100" placeholder="Kontoname" name="name"></td>
+							<td><input class="card" placeholder="Guthaben" name="balance"></td>
+							<td><select class="card w-100" name="utype">
+								<option value="Normal">FS-Mitglied</option>
+								<option value="Unlimited">Unbegrenzt</option>
+							</select></td>
+							<td></td>
+							<td><input type="submit" class="btn pill success" value="Erstellen"></td>
+						</form>
+					</tr>
+				</tbody>
 			</table>
 		</div>
 	</body>
