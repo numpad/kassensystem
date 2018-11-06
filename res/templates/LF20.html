@@ -20,7 +20,6 @@
 						<th>Name</th>
 						<th>Guthaben</th>
 						<th>Kontotyp</th>
-						<th>Aktivität</th>
 						<th>Verwaltung</th>
 					</tr>
 				</thead>
@@ -31,7 +30,6 @@
 						<td>{{user.name}}</td>
 						<td class="in-balance-column" value="{{user.balance}}">{{user.balance}}</td>
 						<td>{{user.utype}}</td>
-						<td>vor {{user.last_active}} Tagen</td>
 						<td><button class="btn pill accent" onclick="editUser({{user.rowid}})">Verwalten</button></td>
 					</tr>
 					{% endfor %}
@@ -44,7 +42,6 @@
 								<option value="Normal">FS-Mitglied</option>
 								<option value="Unlimited">Unbegrenzt</option>
 							</select></td>
-							<td></td>
 							<td><input type="submit" class="btn pill success w-100" onClick="preventFaultyInput(event)" value="Erstellen"></td>
 						</form>
 					</tr>

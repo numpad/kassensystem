@@ -92,7 +92,6 @@ pub fn run(port: u16, db: &mut Datenbank) {
 						name: form.get("name").expect("did not send name in form").to_owned().to_string(),
 						balance: form.get("balance").expect("did not send balance").parse::<i32>().unwrap_or(0),
 						utype: UserType::from(form.get("utype").expect("did not send utype").as_str()),
-						last_active: 0,
 						rowid: None,
 						deleted: 0,
 					};
@@ -109,7 +108,6 @@ pub fn run(port: u16, db: &mut Datenbank) {
 						name: form.get("name").expect("did not send name in form").to_owned().to_string(),
 						balance: form.get("balance").expect("did not send balance").parse::<i32>().unwrap_or(0),
 						utype: UserType::from(form.get("utype").expect("did not send utype").as_str()),
-						last_active: 0,
 						rowid: Some(form.get("user_id").expect("did not send user_id").parse::<u32>().unwrap_or(0)),
 						deleted: 0,
 					};

@@ -13,7 +13,7 @@ impl Datenbank {
 		};
 
 		db.conn.execute(
-			"CREATE TABLE IF NOT EXISTS konten(name TEXT, balance INT, utype TEXT, last_active INT, deleted INT);"
+			"CREATE TABLE IF NOT EXISTS konten(name TEXT, balance INT, utype TEXT, deleted INT);"
 		).expect("could not create table 'konten'");
 
 		db
@@ -22,11 +22,10 @@ impl Datenbank {
 	pub fn add_user(&self, user: &User) {
 		let result = self.conn.execute(
 			format!(
-				"INSERT INTO konten(name, balance, utype, last_active, deleted) VALUES(\"{}\", {}, \"{}\", {}, 0);",
-				user.name(),
+				"INSERT INTO konten(name, balance, utype, deleted) VALUES(\"{}\", {}, \"{}\", 0);",
+				user.name_sanitized(),
 				user.balance(),
 				user.utype(),
-				user.last_active()
 			)
 		);
 
@@ -50,7 +49,7 @@ impl Datenbank {
 
 	pub fn update_user(&self, user: &User) -> Option<()> {
 		let result = self.conn.execute(
-			format!("UPDATE konten SET name='{}',balance={},utype='{}' WHERE rowid = {}", user.name, user.balance, user.utype, user.rowid?)
+			format!("UPDATE konten SET name='{}',balance={},utype='{}' WHERE rowid = {}", user.name_sanitized(), user.balance, user.utype, user.rowid?)
 		);
 		
 		if let Err(e) = result {
@@ -64,17 +63,17 @@ impl Datenbank {
 	pub fn get_users(&self) -> Vec<User> {
 		let mut users = vec![];
 
-		let mut statement = self.conn.prepare("SELECT name, balance, utype, last_active, deleted, rowid FROM konten;").expect("could not prepare statement");
+		let mut statement = self.conn.prepare("SELECT name, balance, utype, deleted, rowid FROM konten;").expect("could not prepare statement");
 		while let sql::State::Row = statement.next().unwrap() {
 			let user = User {
 				name: statement.read::<String>(0).unwrap(),
 				balance: statement.read::<i64>(1).unwrap() as i32,
 				utype: UserType::from(statement.read::<String>(2).unwrap().as_str()),
-				last_active: 0,
-				rowid: Some(statement.read::<i64>(5).unwrap() as u32),
-				deleted: statement.read::<i64>(4).unwrap() as i32,
+				rowid: Some(statement.read::<i64>(4).unwrap() as u32),
+				deleted: statement.read::<i64>(3).unwrap() as i32,
 			};
-
+			
+			// dont send users marked as deleted
 			if !user.deleted() {
 				users.push(user);
 			}

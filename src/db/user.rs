@@ -33,7 +33,6 @@ pub struct User {
 	pub name: String,
 	pub balance: i32,
 	pub utype: UserType,
-	pub last_active: u32,
 	pub rowid: Option<u32>,
 	pub deleted: i32,
 }
@@ -42,14 +41,14 @@ impl User {
 	pub fn name(&self) -> &str {
 		&self.name
 	}
+	pub fn name_sanitized(&self) -> String {
+		self.name.replace("\"", "")
+	}
 	pub fn balance(&self) -> i32 {
 		self.balance
 	}
 	pub fn utype(&self) -> &UserType {
 		&self.utype
-	}
-	pub fn last_active(&self) -> u32 {
-		self.last_active
 	}
 	pub fn rowid(&self) -> Option<u32> {
 		self.rowid

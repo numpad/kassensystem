@@ -35,7 +35,7 @@ function editUser(user_id) {
 	} else {
 		row[3].innerHTML = '<select class="card w-100" name="utype"><option value="Normal">FS-Mitglied</option><option value="Unlimited" selected>Unbegrenzt</option></select>';
 	}
-	row[5].innerHTML = '<input type="submit" class="btn pill success w-100" onclick="saveUser(' + user_id + ')" value="Speichern">';
+	row[4].innerHTML = '<input type="submit" class="btn pill success w-100" onclick="saveUser(' + user_id + ')" value="Speichern">';
 }
 
 function saveUser(user_id) {
