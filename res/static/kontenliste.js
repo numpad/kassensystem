@@ -4,7 +4,9 @@ var delete_target = -1;
 function deleteUsers() {
 	if (delete_target < 0) { return; }
 
-	post("/api/delete_user", {delete_id: delete_target});
+	post("/api/delete_user", {
+		delete_id: encodeURIComponent(delete_target)
+	});
 }
 
 function addDeleteTarget(e) {
@@ -41,12 +43,12 @@ function saveUser(user_id) {
 	var new_name = row[1].children[0].value;
 	var new_balance = row[2].children[0].value;
 	var new_utype = row[3].children[0].value;
-
+	
 	post('/api/update_user', {
-		user_id: user_id,
-		name: new_name,
-		balance: new_balance,
-		utype: new_utype
+		user_id: encodeURIComponent(user_id),
+		name: encodeURIComponent(new_name),
+		balance: encodeURIComponent(new_balance),
+		utype: encodeURIComponent(new_utype)
 	});
 }
 
@@ -96,12 +98,20 @@ function formatCents(cents) {
 }
 
 function preventFaultyInput(e) {
+	e.preventDefault();
+	
 	var name = document.getElementById("input_name").value;
 	var balance_cents = document.getElementById("input_balance").value;
-
+	var utype = document.getElementById("input_utype").value;
+	
 	if (name.trim().length <= 1 || balance_cents.trim().length < 1) {
-		e.preventDefault();
 		alert('Keine valide Eingabe!');
+	} else {
+		post('/api/add_user', {
+			name: encodeURIComponent(name),
+			balance: encodeURIComponent(balance_cents),
+			utype: encodeURIComponent(utype)
+		});
 	}
 }
 
