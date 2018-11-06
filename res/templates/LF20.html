@@ -29,10 +29,10 @@
 					<tr id="user_id{{user.rowid}}">
 						<td onclick="addDeleteTarget(this);">{{user.rowid}}</td>
 						<td>{{user.name}}</td>
-						<td class="in-balance-column">{{user.balance}}</td>
+						<td class="in-balance-column" value="{{user.balance}}">{{user.balance}}</td>
 						<td>{{user.utype}}</td>
 						<td>vor {{user.last_active}} Tagen</td>
-						<td><button class="btn pill accent" onclick="alert('todo')">Verwalten</button></td>
+						<td><button class="btn pill accent" onclick="editUser({{user.rowid}})">Verwalten</button></td>
 					</tr>
 					{% endfor %}
 					<tr>

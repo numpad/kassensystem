@@ -1,6 +1,8 @@
 extern crate tiny_http;
 extern crate tera;
 extern crate url;
+extern crate percent_encoding;
+use server::url::percent_encoding::percent_decode;
 use db::user::User;
 use db::user::UserType;
 use std::env;
@@ -26,16 +28,18 @@ fn send_response(tera: &mut tera::Tera, context: &tera::Context, request: tiny_h
 	request.respond(response).expect("could not respond");
 }
 
-fn parse_formbody(body: &str) -> HashMap<&str, &str> {
+fn parse_formbody(body: &str) -> HashMap<&str, String> {
 	let mut form_data = HashMap::new();
 
 	body.split("&").into_iter()
 		.for_each(|e| {
 			let mut kv = e.split("=").into_iter();
-			form_data.insert(
-				kv.nth(0).expect(&format!("1) e = {}", e)),
-				kv.nth(0).expect(&format!("2) e = {}", e))
-			);
+			
+			let k: &str = kv.nth(0).expect(&format!("1) e = {}", e));
+			let v: &str = kv.nth(0).expect(&format!("2) e = {}", e));
+			let dec = percent_decode(v.as_bytes()).decode_utf8().expect("could not decode url").to_string();
+
+			form_data.insert(k, dec);
 		});
 
 	form_data
@@ -83,7 +87,7 @@ pub fn run(port: u16, db: &mut Datenbank) {
 					let user = User {
 						name: form.get("name").expect("did not send name in form").to_owned().to_string(),
 						balance: form.get("balance").expect("did not send balance").parse::<i32>().unwrap_or(0),
-						utype: UserType::from(*form.get("utype").expect("did not send utype")),
+						utype: UserType::from(form.get("utype").expect("did not send utype").as_str()),
 						last_active: 0,
 						rowid: None,
 						deleted: 0,
@@ -95,12 +99,25 @@ pub fn run(port: u16, db: &mut Datenbank) {
 						db.delete_user(rowid.parse::<i64>().unwrap());
 					}
 				},
+				"update_user" => {
+					// insert into db
+					let user = User {
+						name: form.get("name").expect("did not send name in form").to_owned().to_string(),
+						balance: form.get("balance").expect("did not send balance").parse::<i32>().unwrap_or(0),
+						utype: UserType::from(form.get("utype").expect("did not send utype").as_str()),
+						last_active: 0,
+						rowid: Some(form.get("user_id").expect("did not send user_id").parse::<u32>().unwrap_or(0)),
+						deleted: 0,
+					};
+
+					db.update_user(&user);
+				},
 				_ => (),
 			};
 
 			request.respond(respond_redirect("/LF20.html")).expect("could not respond with redirect");
 		} else if path.len() == 1 && path[0] == "LF20.html" {
-			let users = db.read_all_users();
+			let users = db.get_users();
 			context.insert("users", &users);
 			send_response(&mut tera, &context, request, "LF20.html");
 		} else if path.len() == 1 && path[0] == "" {

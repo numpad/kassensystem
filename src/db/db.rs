@@ -48,7 +48,20 @@ impl Datenbank {
 		Some(())
 	}
 
-	pub fn read_all_users(&self) -> Vec<User> {
+	pub fn update_user(&self, user: &User) -> Option<()> {
+		let result = self.conn.execute(
+			format!("UPDATE konten SET name='{}',balance={},utype='{}' WHERE rowid = {}", user.name, user.balance, user.utype, user.rowid?)
+		);
+		
+		if let Err(e) = result {
+			eprintln!("Could not update user {}, error: {}", user.rowid?, e);
+			return None
+		}
+
+		Some(())
+	}
+
+	pub fn get_users(&self) -> Vec<User> {
 		let mut users = vec![];
 
 		let mut statement = self.conn.prepare("SELECT name, balance, utype, last_active, deleted, rowid FROM konten;").expect("could not prepare statement");

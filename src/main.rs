@@ -3,7 +3,9 @@ use kassensystem::server;
 use kassensystem::db::db::Datenbank;
 
 fn main() {
-	println!("start");
+	let port = 8080;
+
+	println!("starting server on port {}...", port);
 	let mut db = Datenbank::connect();
-	server::run(8080, &mut db);
+	server::run(port, &mut db);
 }

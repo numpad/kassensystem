@@ -3,8 +3,7 @@ var delete_target = -1;
 
 function deleteUsers() {
 	if (delete_target < 0) { return; }
-	
-	alert("Lösche Benutzer " + delete_target);
+
 	post("/api/delete_user", {delete_id: delete_target});
 }
 
@@ -19,6 +18,36 @@ function addDeleteTarget(e) {
 
 	e.parentElement.setAttribute("style", "text-decoration: line-through; color: #d23;");
 	delete_target = e.innerText;
+}
+
+function editUser(user_id) {
+	var row = document.getElementById("user_id" + user_id).children;
+	var name_val = row[1].innerText;
+	var balance_val = row[2].getAttribute("value");
+	var utype = row[3].innerText;
+
+	row[1].innerHTML = '<input class="card" type="text" value="' + name_val + '">';
+	row[2].innerHTML = '<input class="card" type="number" step="50" value="' + balance_val + '">';
+	if (utype == 'Normal') {
+		row[3].innerHTML = '<select class="card w-100" name="utype"><option value="Normal" selected>FS-Mitglied</option><option value="Unlimited">Unbegrenzt</option></select>';
+	} else {
+		row[3].innerHTML = '<select class="card w-100" name="utype"><option value="Normal">FS-Mitglied</option><option value="Unlimited" selected>Unbegrenzt</option></select>';
+	}
+	row[5].innerHTML = '<input type="submit" class="btn pill success w-100" onclick="saveUser(' + user_id + ')" value="Speichern">';
+}
+
+function saveUser(user_id) {
+	var row = document.getElementById("user_id" + user_id).children;
+	var new_name = row[1].children[0].value;
+	var new_balance = row[2].children[0].value;
+	var new_utype = row[3].children[0].value;
+
+	post('/api/update_user', {
+		user_id: user_id,
+		name: new_name,
+		balance: new_balance,
+		utype: new_utype
+	});
 }
 
  /**
@@ -74,7 +103,6 @@ function preventFaultyInput(e) {
 		e.preventDefault();
 		alert('Keine valide Eingabe!');
 	}
-
 }
 
 document.addEventListener("DOMContentLoaded", function () {
