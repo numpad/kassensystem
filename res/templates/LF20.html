@@ -7,6 +7,7 @@
 		<link href="https://fonts.googleapis.com/css?family=Nunito:300,400,700" rel="stylesheet">
 		<link rel="stylesheet" type="text/css" href="/static/lit.css">
 		<link rel="stylesheet" type="text/css" href="/static/util.css">
+		<script src="/static/kontenliste.js"></script>
 	</head>
 	<body class="m0">
 		<div class="c">
@@ -15,6 +16,7 @@
 			<table class="w-100">
 				<thead>
 					<tr>
+						<th>#</th>
 						<th>Name</th>
 						<th>Guthaben</th>
 						<th>Kontotyp</th>
@@ -24,9 +26,10 @@
 				</thead>
 				<tbody>
 					{% for user in users %}
-					<tr>
+					<tr id="user_id{{user.rowid}}">
+						<td onclick="addDeleteTarget(this);">{{user.rowid}}</td>
 						<td>{{user.name}}</td>
-						<td>{{user.balance / 100}}€</td>
+						<td class="in-balance-column">{{user.balance}}</td>
 						<td>{{user.utype}}</td>
 						<td>vor {{user.last_active}} Tagen</td>
 						<td><button class="btn pill accent" onclick="alert('todo')">Verwalten</button></td>
@@ -34,18 +37,20 @@
 					{% endfor %}
 					<tr>
 						<form action="/api/add_user" method="POST">
-							<td><input class="card w-100" placeholder="Kontoname" name="name"></td>
-							<td><input class="card" placeholder="Guthaben" name="balance"></td>
+							<td></td>
+							<td><input class="card w-100" placeholder="Kontoname" name="name" id="input_name"></td>
+							<td><input class="card w-100" placeholder="Guthaben" name="balance" id="input_balance"></td>
 							<td><select class="card w-100" name="utype">
 								<option value="Normal">FS-Mitglied</option>
 								<option value="Unlimited">Unbegrenzt</option>
 							</select></td>
 							<td></td>
-							<td><input type="submit" class="btn pill success" value="Erstellen"></td>
+							<td><input type="submit" class="btn pill success w-100" onClick="preventFaultyInput(event)" value="Erstellen"></td>
 						</form>
 					</tr>
 				</tbody>
 			</table>
+			<a href="#" onclick="deleteUsers();">Ausgewählte löschen</a>
 		</div>
 	</body>
 </html>

@@ -1,13 +1,14 @@
 extern crate tiny_http;
 extern crate tera;
 extern crate url;
+use db::user::User;
+use db::user::UserType;
 use std::env;
 use std::fs::File;
 use self::url::Url;
 use std::path::PathBuf;
 use db::db::Datenbank;
 use std::collections::HashMap;
-use std::borrow::Borrow;
 
 fn static_path() -> String {
 	let path = env::current_dir().unwrap();
@@ -40,6 +41,18 @@ fn parse_formbody(body: &str) -> HashMap<&str, &str> {
 	form_data
 }
 
+fn respond_redirect(url: &str) -> tiny_http::Response<std::io::Empty> {
+	// send status code: 301 Moved Permanently
+	let mut response = tiny_http::Response::new_empty(tiny_http::StatusCode(301));
+	
+	// add redirect target location header
+	response.add_header(tiny_http::Header::from_bytes(
+		&"Location"[..], url
+	).unwrap());
+
+	response
+}
+
 pub fn run(port: u16, db: &mut Datenbank) {
 	let server = tiny_http::Server::http(format!("localhost:{}", port)).expect("could not run server!");
 	let mut tera = compile_templates!(&templates_path());
@@ -60,22 +73,32 @@ pub fn run(port: u16, db: &mut Datenbank) {
 		// send response
 		if path.len() == 2 && path[0] == "api" {
 			let mut data = String::new();
-			request.as_reader().read_to_string(&mut data);
+			request.as_reader().read_to_string(&mut data).expect("could not read request body");
+			
+			let form = parse_formbody(&data);
+			
+			match path[1] {
+				"add_user" => {
+					// insert into db
+					let user = User {
+						name: form.get("name").expect("did not send name in form").to_owned().to_string(),
+						balance: form.get("balance").expect("did not send balance").parse::<i32>().unwrap_or(0),
+						utype: UserType::from(*form.get("utype").expect("did not send utype")),
+						last_active: 0,
+						rowid: None,
+						deleted: 0,
+					};
+					db.add_user(&user);
+				},
+				"delete_user" => {
+					if let Some(rowid) = form.get("delete_id") {
+						db.delete_user(rowid.parse::<i64>().unwrap());
+					}
+				},
+				_ => (),
+			};
 
-			/*
-			data.push_str("<hr>");
-			for header in request.headers() {
-				data.push_str(&format!("<p>{}: {}</p>", header.field.as_str(), header.value));
-			}
-			*/
-			{
-				let form = parse_formbody(&data);
-				println!("{}", 
-					form.get("name").unwrap()
-				);
-			}
-
-			request.respond(tiny_http::Response::from_data(data)).unwrap();
+			request.respond(respond_redirect("/LF20.html")).expect("could not respond with redirect");
 		} else if path.len() == 1 && path[0] == "LF20.html" {
 			let users = db.read_all_users();
 			context.insert("users", &users);
@@ -90,10 +113,13 @@ pub fn run(port: u16, db: &mut Datenbank) {
 
 			send_response(&mut tera, &context, request, "index.html");
 		} else if path.len() == 2 && path[0] == "static" {
-			let response = tiny_http::Response::from_file(File::open(
-				PathBuf::from(static_path()).join(path[1])
-			).unwrap());
-			request.respond(response).expect("could not respond");
+			let static_file = File::open(PathBuf::from(static_path()).join(path[1]));
+			if let Ok(file) = static_file {
+				let response = tiny_http::Response::from_file(file);
+				request.respond(response).expect("could not respond");
+			} else {
+				send_response(&mut tera, &context, request, "404.html");
+			}
 		} else {
 			send_response(&mut tera, &context, request, "404.html");
 		}

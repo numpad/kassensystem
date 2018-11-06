@@ -1,6 +1,5 @@
 use std::fmt::{Display, Formatter, Error};
 extern crate serde;
-use db::user::serde::ser::Serialize;
 
 #[derive(Serialize, Deserialize)]
 pub enum UserType {
@@ -11,8 +10,8 @@ pub enum UserType {
 impl Display for UserType {
 	fn fmt(&self, fmt: &mut Formatter) -> Result<(), Error> {
 		let utypename = match self {
-			UserType::Normal	=> "FS-Mitglied",
-			UserType::Unlimited	=> "Guthabenkonto",
+			UserType::Normal	=> "Normal",
+			UserType::Unlimited	=> "Unlimited",
 		};
 
 		write!(fmt, "{}", utypename)
@@ -22,8 +21,8 @@ impl Display for UserType {
 impl<'a> From<&'a str> for UserType {
 	fn from(input: &str) -> UserType {
 		match input {
-			"FS-Mitglied" => UserType::Normal,
-			"Guthabenkonto" => UserType::Unlimited,
+			"Normal" => UserType::Normal,
+			"Unlimited" => UserType::Unlimited,
 			_ => UserType::Normal,
 		}
 	}
@@ -35,6 +34,8 @@ pub struct User {
 	pub balance: i32,
 	pub utype: UserType,
 	pub last_active: u32,
+	pub rowid: Option<u32>,
+	pub deleted: i32,
 }
 
 impl User {
@@ -49,5 +50,11 @@ impl User {
 	}
 	pub fn last_active(&self) -> u32 {
 		self.last_active
+	}
+	pub fn rowid(&self) -> Option<u32> {
+		self.rowid
+	}
+	pub fn deleted(&self) -> bool {
+		self.deleted > 0
 	}
 }
